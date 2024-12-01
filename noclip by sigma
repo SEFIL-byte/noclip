@@ -1,0 +1,40 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local localPlayer = Players.LocalPlayer
+local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+
+local noclipEnabled = false -- Tracks whether noclip is active
+
+-- Function to toggle noclip
+local function toggleNoclip()
+    noclipEnabled = not noclipEnabled
+end
+
+-- Function to handle noclip
+local function onStepped()
+    if noclipEnabled then
+        for _, part in ipairs(character:GetDescendants()) do
+            if part:IsA("BasePart") and part.CanCollide then
+                part.CanCollide = false
+            end
+        end
+    end
+end
+
+-- Detect key press to toggle noclip
+local UIS = game:GetService("UserInputService")
+UIS.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if input.KeyCode == Enum.KeyCode.E then -- Change "E" to any key you prefer
+        toggleNoclip()
+    end
+end)
+
+-- Keep checking for noclip
+RunService.Stepped:Connect(onStepped)
+
+-- Ensure character loads properly
+localPlayer.CharacterAdded:Connect(function(newCharacter)
+    character = newCharacter
+end)
