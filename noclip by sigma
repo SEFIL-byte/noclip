@@ -1,14 +1,55 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
 
 local localPlayer = Players.LocalPlayer
 local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 
 local noclipEnabled = false -- Tracks whether noclip is active
+local currentKeybind = Enum.KeyCode.E -- Default keybind
+
+-- GUI Setup
+local gui = Instance.new("ScreenGui")
+local frame = Instance.new("Frame")
+local titleLabel = Instance.new("TextLabel")
+local keybindButton = Instance.new("TextButton")
+
+gui.Name = "NoclipGui"
+gui.Parent = game.CoreGui -- Parent to CoreGui so it shows in-game
+
+frame.Name = "MainFrame"
+frame.Size = UDim2.new(0, 200, 0, 100) -- Smaller GUI
+frame.Position = UDim2.new(0.05, 0, 0.8, 0) -- Bottom-left corner
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 2
+frame.Active = true
+frame.Draggable = true
+frame.Parent = gui
+
+titleLabel.Name = "TitleLabel"
+titleLabel.Size = UDim2.new(1, 0, 0.4, 0)
+titleLabel.Position = UDim2.new(0, 0, 0, 0)
+titleLabel.Text = "Noclip"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.TextSize = 18
+titleLabel.BackgroundTransparency = 1
+titleLabel.Parent = frame
+
+keybindButton.Name = "KeybindButton"
+keybindButton.Size = UDim2.new(0.8, 0, 0.4, 0)
+keybindButton.Position = UDim2.new(0.1, 0, 0.5, 0)
+keybindButton.Text = "Change Keybind"
+keybindButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+keybindButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+keybindButton.Font = Enum.Font.SourceSans
+keybindButton.TextSize = 14
+keybindButton.Parent = frame
 
 -- Function to toggle noclip
 local function toggleNoclip()
     noclipEnabled = not noclipEnabled
+    titleLabel.Text = "Noclip: " .. (noclipEnabled and "ON" or "OFF")
 end
 
 -- Function to handle noclip
@@ -23,12 +64,28 @@ local function onStepped()
 end
 
 -- Detect key press to toggle noclip
-local UIS = game:GetService("UserInputService")
 UIS.InputBegan:Connect(function(input, processed)
     if processed then return end
-    if input.KeyCode == Enum.KeyCode.E then -- Change "E" to any key you prefer
+    if input.KeyCode == currentKeybind then
         toggleNoclip()
     end
+end)
+
+-- Handle changing the keybind
+local changingKeybind = false
+keybindButton.MouseButton1Click:Connect(function()
+    if changingKeybind then return end
+    changingKeybind = true
+    keybindButton.Text = "Press a Key..."
+    local connection
+    connection = UIS.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Keyboard then
+            currentKeybind = input.KeyCode
+            keybindButton.Text = "Keybind: " .. tostring(currentKeybind):gsub("Enum.KeyCode.", "")
+            changingKeybind = false
+            connection:Disconnect()
+        end
+    end)
 end)
 
 -- Keep checking for noclip
